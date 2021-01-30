@@ -23,12 +23,14 @@ from socket import AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST, SO_REUSEADDR, 
 from time import sleep, time
 import platform
 import netifaces as ni
+from typing import List, Type, Dict, Any, Union
+from typing_extensions import Literal
 
 from .errors import WorkflowException
 from .msgtypes import Acknowledgement, GetGroup, GetHostFirmware, GetInfo, GetLabel, GetLocation, GetPower, GetVersion, \
     GetWifiFirmware, GetWifiInfo, SERVICE_IDS, SetLabel, SetPower, StateGroup, StateHostFirmware, StateInfo, StateLabel, \
     StateLocation, StatePower, StateVersion, StateWifiFirmware, StateWifiInfo, str_map
-from .message import BROADCAST_MAC
+from .message import BROADCAST_MAC, Message
 from .products import features_map, product_map, light_products
 from .unpack import unpack_lifx_message
 
@@ -55,7 +57,7 @@ class Device(object):
     # mac_addr is a string, with the ":" and everything.
     # service is an integer that maps to a service type. See SERVICE_IDS in msgtypes.py
     # source_id is a number unique to this client, will appear in responses to this client
-    def __init__(self, mac_addr, ip_addr, service, port, source_id, verbose=False):
+    def __init__(self, mac_addr: str, ip_addr: str, service: int, port: int, source_id: int, verbose: bool = False):
         self.verbose = verbose
         self.mac_addr = mac_addr
         self.port = port
@@ -107,7 +109,7 @@ class Device(object):
     ############################################################################
 
     # update the device's (relatively) persistent attributes
-    def refresh(self):
+    def refresh(self) -> None:
         self.label = self.get_label()
         self.location = self.get_location()
         self.group = self.get_group()
@@ -118,22 +120,22 @@ class Device(object):
         self.product_name = self.get_product_name()
         self.product_features = self.get_product_features()
 
-    def get_mac_addr(self):
+    def get_mac_addr(self) -> str:
         return self.mac_addr
 
-    def get_service(self):
+    def get_service(self) -> int:
         return self.service
 
-    def get_port(self):
+    def get_port(self) -> int:
         return self.port
 
-    def get_ip_addr(self):
+    def get_ip_addr(self) -> str:
         return self.ip_addr
 
-    def get_source_id(self):
+    def get_source_id(self) -> int:
         return self.source_id
 
-    def get_label(self):
+    def get_label(self) -> Union[str, None]:
         try:
             response = self.req_with_resp(GetLabel, StateLabel)
             self.label = response.label.encode('utf-8')
@@ -143,7 +145,7 @@ class Device(object):
             raise
         return self.label
 
-    def get_location(self):
+    def get_location(self) -> Union[str, None]:
         try:
             response = self.req_with_resp(GetLocation, StateLocation)
             self.location = response.label.encode('utf-8')
@@ -153,7 +155,7 @@ class Device(object):
             raise
         return self.location
 
-    def get_group(self):
+    def get_group(self) -> Union[str, None]:
         try:
             response = self.req_with_resp(GetGroup, StateGroup)
             self.group = response.label.encode('utf-8')
@@ -163,12 +165,12 @@ class Device(object):
             raise
         return self.group
 
-    def set_label(self, label):
+    def set_label(self, label: str) -> None:
         if len(label) > 32:
             label = label[:32]
         self.req_with_ack(SetLabel, {"label": label})
 
-    def get_power(self):
+    def get_power(self) -> Union[int, None]:
         try:
             response = self.req_with_resp(GetPower, StatePower)
             self.power_level = response.power_level
@@ -176,7 +178,7 @@ class Device(object):
             raise
         return self.power_level
 
-    def set_power(self, power, rapid=False):
+    def set_power(self, power: Union[bool, Literal[0, 1, 'on', 'off']], rapid: bool = False) -> None:
         on = [True, 1, "on"]
         off = [False, 0, "off"]
         if power in on and not rapid:
