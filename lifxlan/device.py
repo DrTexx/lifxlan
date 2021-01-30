@@ -456,7 +456,7 @@ class Device(object):
     ############################################################################
 
     # Don't wait for Acks or Responses, just send the same message repeatedly as fast as possible
-    def fire_and_forget(self, msg_type, payload={}, timeout_secs=DEFAULT_TIMEOUT, num_repeats=DEFAULT_ATTEMPTS):
+    def fire_and_forget(self, msg_type: Type[Message], payload: Dict[str, Any] = {}, timeout_secs: float = DEFAULT_TIMEOUT, num_repeats: int = DEFAULT_ATTEMPTS):
         socket_id = self.initialize_socket(timeout_secs)
         sock = self.socket_table[socket_id]
         msg = msg_type(self.mac_addr, self.source_id, seq_num=0, payload=payload, ack_requested=False, response_requested=False)
@@ -475,11 +475,11 @@ class Device(object):
         self.close_socket(socket_id)
 
     # Usually used for Set messages
-    def req_with_ack(self, msg_type, payload, timeout_secs=DEFAULT_TIMEOUT, max_attempts=DEFAULT_ATTEMPTS):
+    def req_with_ack(self, msg_type: Type[Message], payload: Dict[str, Any], timeout_secs: float = DEFAULT_TIMEOUT, max_attempts: int = DEFAULT_ATTEMPTS):
         self.req_with_resp(msg_type, Acknowledgement, payload, timeout_secs, max_attempts)
 
     # Usually used for Get messages, or for state confirmation after Set (hence the optional payload)
-    def req_with_resp(self, msg_type, response_type, payload={}, timeout_secs=DEFAULT_TIMEOUT, max_attempts=DEFAULT_ATTEMPTS):
+    def req_with_resp(self, msg_type: Type[Message], response_type: Type[Message], payload: Dict[str, Any] = {}, timeout_secs: float = DEFAULT_TIMEOUT, max_attempts: int = DEFAULT_ATTEMPTS):
         # Need to put error checking here for aguments
         if type(response_type) != type([]):
             response_type = [response_type]
@@ -531,7 +531,7 @@ class Device(object):
         return device_response
 
     # Not currently implemented, although the LIFX LAN protocol supports this kind of workflow natively
-    def req_with_ack_resp(self, msg_type, response_type, payload, timeout_secs=DEFAULT_TIMEOUT, max_attempts=DEFAULT_ATTEMPTS):
+    def req_with_ack_resp(self, msg_type: Type[Message], response_type: Type[Message], payload: Dict[str, Any], timeout_secs: float = DEFAULT_TIMEOUT, max_attempts: int = DEFAULT_ATTEMPTS):
         pass
 
     ############################################################################
