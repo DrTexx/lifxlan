@@ -39,7 +39,7 @@ DEFAULT_ATTEMPTS = 1
 
 VERBOSE = False
 
-def get_broadcast_addrs():
+def get_broadcast_addrs() -> List[str]:
     broadcast_addrs = []
     for iface in ni.interfaces():
         try:
@@ -422,7 +422,7 @@ class Device(object):
         s += indent + "Features: {}\n".format(self.product_features)
         return s
 
-    def device_time_str(self, indent):
+    def device_time_str(self, indent: str) -> str:
         time, uptime, downtime = self.get_info_tuple()
         time_s = datetime.utcfromtimestamp(time/1000000000) if time != None else None
         uptime_s = round(nanosec_to_hours(uptime), 2) if uptime != None else None
@@ -565,5 +565,5 @@ class Device(object):
 #                                                                              #
 ################################################################################
 
-def nanosec_to_hours(ns):
+def nanosec_to_hours(ns: int) -> float:
     return ns/(1000000000.0*60*60)
